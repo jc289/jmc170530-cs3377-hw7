@@ -7,16 +7,36 @@
  */
 
 #include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <stdint.h>
+#include <inttypes.h>
 #include "cdk.h"
 
 
-#define MATRIX_WIDTH 4
-#define MATRIX_HEIGHT 3
-#define BOX_WIDTH 15
+#define MATRIX_WIDTH 3
+#define MATRIX_HEIGHT 5
+#define BOX_WIDTH 25
 #define MATRIX_NAME_STRING "Test Matrix"
 
 using namespace std;
 
+const int maxRecordStringLength = 25; 
+
+class BinaryFileHeader 
+{  
+public:  
+    uint32_t magicNumber;         /* Should be 0xFEEDFACE */   
+    uint32_t versionNumber;   
+    uint64_t numRecords; 
+};
+ 
+class BinaryFileRecord
+{
+public: 
+  int strLength;   
+  char stringBuffer[maxRecordStringLength]; 
+};
 
 int main()
 {
@@ -33,8 +53,8 @@ int main()
   // values you choose to set for MATRIX_WIDTH and MATRIX_HEIGHT
   // above.
 
-  const char 		*rowTitles[] = {"R0", "R1", "R2", "R3", "R4", "R5"};
-  const char 		*columnTitles[] = {"C0", "C1", "C2", "C3", "C4", "C5"};
+  const char 		*rowTitles[] = {"a", "a", "b", "c", "d", "e"};
+  const char 		*columnTitles[] = {"a", "a", "b", "c"};
   int		boxWidths[] = {BOX_WIDTH, BOX_WIDTH, BOX_WIDTH, BOX_WIDTH, BOX_WIDTH, BOX_WIDTH};
   int		boxTypes[] = {vMIXED, vMIXED, vMIXED, vMIXED,  vMIXED,  vMIXED};
 
@@ -68,9 +88,41 @@ int main()
   /*
    * Dipslay a message
    */
-  setCDKMatrixCell(myMatrix, 2, 2, "Test Message");
-  drawCDKMatrix(myMatrix, true);    /* required  */
 
+  ifstream binInfile("cs3377.bin", ios::in|ios::binary);
+
+  BinaryFileHeader *myHeader = new BinaryFileHeader();
+
+  binInfile.read((char *) myHeader, sizeof(BinaryFileHeader));
+  
+  char magicStr[BOX_WIDTH];
+  sprintf(magicStr, "Magic: %08x", myHeader->magicNumber);
+  
+  char versionStr[BOX_WIDTH];
+  sprintf(versionStr, "Version: %"PRIu32"", myHeader->versionNumber);
+
+  char numRecordsStr[BOX_WIDTH];
+  sprintf(numRecordsStr, "NumRecords: %"PRIu64"", myHeader->numRecords); 
+  
+  BinaryFileRecord *myRecord = new BinaryFileRecord();
+
+  for(int i = 0; i < 4; i++)
+  {
+    binInfile.read((char*) myRecord, sizeof(BinaryFileRecord));
+    char stringlength[BOX_WIDTH];
+    sprintf(stringlength, "strlen: %d", myRecord->strLength);
+    setCDKMatrixCell(myMatrix, i+2, 1, stringlength);
+    char happy[BOX_WIDTH];
+    sprintf(happy, "%s", myRecord->stringBuffer);
+    setCDKMatrixCell(myMatrix, i+2, 2, happy);
+  }
+  
+  setCDKMatrixCell(myMatrix, 1, 1, magicStr);
+  setCDKMatrixCell(myMatrix, 1, 2, versionStr);
+  setCDKMatrixCell(myMatrix, 1, 3, numRecordsStr);
+  binInfile.close();
+
+  drawCDKMatrix(myMatrix, true);    /* required  */
   /* So we can see results, pause until a key is pressed. */
   unsigned char x;
   cin >> x;

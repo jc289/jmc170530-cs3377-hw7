@@ -1,0 +1,16 @@
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Committer: JMC170530 <jmc170530@cslinux1.utdallas.edu>
+#
+# On branch working
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#	new file:   Makefile
+	Added the Makefile to make the cdk example
+#	modified:   README.md
+#	new file:   cdkexample.cc
+	Added the cdkexample file to test cdk
+#
