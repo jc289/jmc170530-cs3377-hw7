@@ -34,7 +34,7 @@ public:
 class BinaryFileRecord
 {
 public: 
-  int strLength;   
+  uint8_t strLength;   
   char stringBuffer[maxRecordStringLength]; 
 };
 
